@@ -1,0 +1,71 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © jahearn
+// This is used for plotting the term structure of a futures contract.  It plots the first 3 months, and from then on plots the next quarter.
+
+// Motivation:  https://twitter.com/MacroTactical/status/1584953124434849795/photo/1
+
+//@version=5
+indicator("Curve Structure", shorttitle="Curve")
+
+yield_prefix    = input("US", "Yield Prefix")  // US for US Soverign Debt Yields
+width           = input(30,"Space between points")
+term_length     = 10
+
+// Because Pine forces me to be a peasant.
+yield_03M   = yield_prefix + "03MY"
+yield_06M   = yield_prefix + "06MY"
+yield_01Y   = yield_prefix + "01Y"
+yield_02Y   = yield_prefix + "02Y"
+yield_03Y   = yield_prefix + "03Y"
+yield_05Y   = yield_prefix + "05Y"
+yield_07Y   = yield_prefix + "07Y"
+yield_10Y   = yield_prefix + "10Y"
+yield_20Y   = yield_prefix + "20Y"
+yield_30Y   = yield_prefix + "30Y"
+
+// Now that we have all of the contracts figured out
+price_03M = request.security(yield_03M, "D", close)
+price_06M = request.security(yield_06M, "D", close)
+price_01Y = request.security(yield_01Y, "D", close)
+price_02Y = request.security(yield_02Y, "D", close)
+price_03Y = request.security(yield_03Y, "D", close)
+price_05Y = request.security(yield_05Y, "D", close)
+price_07Y = request.security(yield_07Y, "D", close)
+price_10Y = request.security(yield_10Y, "D", close)
+price_20Y = request.security(yield_20Y, "D", close)
+price_30Y = request.security(yield_30Y, "D", close)
+
+// line functions
+pos(idx) =>
+    bar_index - (term_length - idx) * width
+
+draw_label(idx, src, txt) =>
+    var label la = na
+    label.delete(la)
+    la := label.new(pos(idx),src, text = txt, color=color.black, style = label.style_label_down, textcolor = color.white )
+
+draw_line(index_1, source_1, index_2, source_2) =>
+    var line li = na
+    line.delete(li)
+    li := line.new(pos(index_1), source_1, pos(index_2), source_2, color=color.red, width=2)
+
+draw_label(0,price_03M, yield_03M + " \n " + str.tostring(price_03M))
+draw_label(1,price_06M, yield_06M + " \n " + str.tostring(price_06M))
+draw_label(2,price_01Y, yield_01Y + " \n " + str.tostring(price_01Y))
+draw_label(3,price_02Y, yield_02Y + " \n " + str.tostring(price_02Y))
+draw_label(4,price_03Y, yield_03Y + " \n " + str.tostring(price_03Y))
+draw_label(5,price_05Y, yield_05Y + " \n " + str.tostring(price_05Y))
+draw_label(6,price_07Y, yield_07Y + " \n " + str.tostring(price_07Y))
+draw_label(7,price_10Y, yield_10Y + " \n " + str.tostring(price_10Y))
+draw_label(8,price_20Y, yield_20Y + " \n " + str.tostring(price_20Y))
+draw_label(9,price_30Y, yield_30Y + " \n " + str.tostring(price_30Y))
+
+draw_line(0,price_03M, 1, price_06M)
+draw_line(1,price_06M, 2, price_01Y)
+draw_line(2,price_01Y, 3, price_02Y)
+draw_line(3,price_02Y, 4, price_03Y)
+draw_line(4,price_03Y, 5, price_05Y)
+draw_line(5,price_05Y, 6, price_07Y)
+draw_line(6,price_07Y, 7, price_10Y)
+draw_line(7,price_10Y, 8, price_20Y)
+draw_line(8,price_20Y, 9, price_30Y)
