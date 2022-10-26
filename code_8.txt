@@ -12,7 +12,7 @@ contract_month  = input.string("Z", "Futures Month", ["F","G","H","J","K","M","N
 contract_year   = input("2022", "Futures Contract Year")
 width           = input(30,"Space between points")
 is_rate         = input.bool(false,"is this a rates contract?")
-term_length     = 6
+term_length     = 9
 
 
 // Contract functions, assumes tradingview future contract followed by CME code month and 4 digit year.  Example:  GEZ2022
