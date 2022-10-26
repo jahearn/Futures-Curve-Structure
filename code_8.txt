@@ -11,7 +11,7 @@ contract_prefix = input("CL", "Futures Contract Prefix")  // GE for eurodollar f
 contract_month  = input.string("Z", "Futures Month", ["F","G","H","J","K","M","N","Q","U","V","X","Z"])
 contract_year   = input("2022", "Futures Contract Year")
 width           = input(30,"Space between points")
-is_rate         = input.bool(false,"is this a rates contract?")
+type            = input.string( "Standard", "Futures contract display type?", [ "Standard", "Interest Rate (100-x)", "Currency vs $ (1/x)"])
 term_length     = 9
 
 
@@ -122,7 +122,7 @@ draw_line(index_1, source_1, index_2, source_2) =>
     line.delete(li)
     li := line.new(pos(index_1), source_1, pos(index_2), source_2, color=color.red, width=2)
 
-if (is_rate == false)
+if (type == "Standard")
 
     draw_label(0,price_0, contract_0 + " \n " + str.tostring(price_0))
     draw_label(1,price_1, contract_1 + " \n " + str.tostring(price_1))
@@ -143,7 +143,7 @@ if (is_rate == false)
     draw_line(6,price_6, 7, price_7)
     draw_line(7,price_7, 8, price_8)
 
-if (is_rate == true)
+if (type == "Interest Rate (100-x)")
 
     draw_label(0,100 - price_0, contract_0 + " \n " + str.tostring(100 - price_0))
     draw_label(1,100 - price_1, contract_1 + " \n " + str.tostring(100 - price_1))
@@ -163,3 +163,24 @@ if (is_rate == true)
     draw_line(5,100 - price_5, 6, 100 - price_6)
     draw_line(6,100 - price_6, 7, 100 - price_7)
     draw_line(7,100 - price_7, 8, 100 - price_8)
+
+if (type == "Currency vs $ (1/x)")
+
+	draw_label(0,1 / price_0, contract_0 + " \n " + str.tostring(math.round(1 / price_0, 3)))
+    draw_label(1,1 / price_1, contract_1 + " \n " + str.tostring(math.round(1 / price_1, 3)))
+    draw_label(2,1 / price_2, contract_2 + " \n " + str.tostring(math.round(1 / price_2, 3)))
+    draw_label(3,1 / price_3, contract_3 + " \n " + str.tostring(math.round(1 / price_3, 3)))
+    draw_label(4,1 / price_4, contract_4 + " \n " + str.tostring(math.round(1 / price_4, 3)))
+    draw_label(5,1 / price_5, contract_5 + " \n " + str.tostring(math.round(1 / price_5, 3)))
+    draw_label(6,1 / price_6, contract_6 + " \n " + str.tostring(math.round(1 / price_6, 3)))
+    draw_label(7,1 / price_7, contract_7 + " \n " + str.tostring(math.round(1 / price_7, 3)))
+    draw_label(8,1 / price_8, contract_8 + " \n " + str.tostring(math.round(1 / price_8, 3)))
+
+    draw_line(0,1 / price_0, 1, 1 / price_1)
+    draw_line(1,1 / price_1, 2, 1 / price_2)
+    draw_line(2,1 / price_2, 3, 1 / price_3)
+    draw_line(3,1 / price_3, 4, 1 / price_4)
+    draw_line(4,1 / price_4, 5, 1 / price_5)
+    draw_line(5,1 / price_5, 6, 1 / price_6)
+    draw_line(6,1 / price_6, 7, 1 / price_7)
+    draw_line(7,1 / price_7, 8, 1 / price_8)
