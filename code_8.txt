@@ -1,0 +1,165 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © jahearn
+// This is used for plotting the term structure of a futures contract.  It plots the first 3 months, and from then on plots the next quarter.
+
+// Motivation:  https://twitter.com/MacroTactical/status/1584953124434849795/photo/1
+
+//@version=5
+indicator("Curve Structure", shorttitle="Curve")
+
+contract_prefix = input("CL", "Futures Contract Prefix")  // GE for eurodollar futures for example.
+contract_month  = input.string("Z", "Futures Month", ["F","G","H","J","K","M","N","Q","U","V","X","Z"])
+contract_year   = input("2022", "Futures Contract Year")
+width           = input(30,"Space between points")
+is_rate         = input.bool(false,"is this a rates contract?")
+term_length     = 6
+
+
+// Contract functions, assumes tradingview future contract followed by CME code month and 4 digit year.  Example:  GEZ2022
+next_month_code(current_month) =>
+    next_month = switch current_month
+        "F" => datetime = "G"
+        "G" => datetime = "H"
+        "H" => datetime = "J"
+        "J" => datetime = "K"
+        "K" => datetime = "M"
+        "M" => datetime = "N"
+        "N" => datetime = "Q"
+        "Q" => datetime = "U"
+        "U" => datetime = "V"
+        "V" => datetime = "X"
+        "X" => datetime = "Z"
+        "Z" => datetime = "F"        
+
+next_quarter_code(current_month) =>
+    next_month = switch current_month
+        "F" => datetime = "H"
+        "G" => datetime = "H"
+        "H" => datetime = "M"
+        "J" => datetime = "M"
+        "K" => datetime = "M"
+        "M" => datetime = "U"
+        "N" => datetime = "U"
+        "Q" => datetime = "U"
+        "U" => datetime = "Z"
+        "V" => datetime = "Z"
+        "X" => datetime = "Z"
+        "Z" => datetime = "H"
+
+push_year(current_year) =>
+    push_year = switch current_year
+        "2022" => push_year = "2023"
+        "2023" => push_year = "2024"
+        "2024" => push_year = "2025"
+        "2025" => push_year = "2026"
+        "2026" => push_year = "2027"
+        "2027" => push_year = "2028"
+
+next_year(term_month, term_year) =>
+    next_year = switch term_month
+        "Z" => push_year(term_year)
+        =>     term_year
+
+// Because Pine forces me to be a peasant.
+month_0    = contract_month
+year_0     = contract_year
+contract_0 = contract_prefix + month_0 + year_0
+
+month_1    = next_quarter_code(month_0)
+year_1     = next_year(month_0, year_0)
+contract_1 = contract_prefix + month_1 + year_1
+
+month_2    = next_quarter_code(month_1)
+year_2     = next_year(month_1, year_1)
+contract_2 = contract_prefix + month_2 + year_2
+
+month_3    = next_quarter_code(month_2)
+year_3     = next_year(month_2, year_2)
+contract_3 = contract_prefix + month_3 + year_3
+
+month_4    = next_quarter_code(month_3)
+year_4     = next_year(month_3, year_3)
+contract_4 = contract_prefix + month_4 + year_4
+
+month_5    = next_quarter_code(month_4)
+year_5     = next_year(month_4, year_4)
+contract_5 = contract_prefix + month_5 + year_5
+
+month_6    = next_quarter_code(month_5)
+year_6     = next_year(month_5, year_5)
+contract_6 = contract_prefix + month_6 + year_6
+
+month_7    = next_quarter_code(month_6)
+year_7     = next_year(month_6, year_6)
+contract_7 = contract_prefix + month_7 + year_7
+
+month_8    = next_quarter_code(month_7)
+year_8     = next_year(month_7, year_7)
+contract_8 = contract_prefix + month_8 + year_8
+
+// Now that we have all of the contracts figured out
+price_0 = request.security(contract_0, "D", close)
+price_1 = request.security(contract_1, "D", close)
+price_2 = request.security(contract_2, "D", close)
+price_3 = request.security(contract_3, "D", close)
+price_4 = request.security(contract_4, "D", close)
+price_5 = request.security(contract_5, "D", close)
+price_6 = request.security(contract_6, "D", close)
+price_7 = request.security(contract_7, "D", close)
+price_8 = request.security(contract_8, "D", close)
+
+// line functions
+pos(idx) =>
+    bar_index - (term_length - idx) * width
+
+draw_label(idx, src, txt) =>
+    var label la = na
+    label.delete(la)
+    la := label.new(pos(idx),src, text = txt, color=color.black, style = label.style_label_down, textcolor = color.white )
+
+draw_line(index_1, source_1, index_2, source_2) =>
+    var line li = na
+    line.delete(li)
+    li := line.new(pos(index_1), source_1, pos(index_2), source_2, color=color.red, width=2)
+
+if (is_rate == false)
+
+    draw_label(0,price_0, contract_0 + " \n " + str.tostring(price_0))
+    draw_label(1,price_1, contract_1 + " \n " + str.tostring(price_1))
+    draw_label(2,price_2, contract_2 + " \n " + str.tostring(price_2))
+    draw_label(3,price_3, contract_3 + " \n " + str.tostring(price_3))
+    draw_label(4,price_4, contract_4 + " \n " + str.tostring(price_4))
+    draw_label(5,price_5, contract_5 + " \n " + str.tostring(price_5))
+    draw_label(6,price_6, contract_6 + " \n " + str.tostring(price_6))
+    draw_label(7,price_7, contract_7 + " \n " + str.tostring(price_7))
+    draw_label(8,price_8, contract_8 + " \n " + str.tostring(price_8))
+
+    draw_line(0,price_0, 1, price_1)
+    draw_line(1,price_1, 2, price_2)
+    draw_line(2,price_2, 3, price_3)
+    draw_line(3,price_3, 4, price_4)
+    draw_line(4,price_4, 5, price_5)
+    draw_line(5,price_5, 6, price_6)
+    draw_line(6,price_6, 7, price_7)
+    draw_line(7,price_7, 8, price_8)
+
+if (is_rate == true)
+
+    draw_label(0,100 - price_0, contract_0 + " \n " + str.tostring(100 - price_0))
+    draw_label(1,100 - price_1, contract_1 + " \n " + str.tostring(100 - price_1))
+    draw_label(2,100 - price_2, contract_2 + " \n " + str.tostring(100 - price_2))
+    draw_label(3,100 - price_3, contract_3 + " \n " + str.tostring(100 - price_3))
+    draw_label(4,100 - price_4, contract_4 + " \n " + str.tostring(100 - price_4))
+    draw_label(5,100 - price_5, contract_5 + " \n " + str.tostring(100 - price_5))
+    draw_label(6,100 - price_6, contract_6 + " \n " + str.tostring(100 - price_6))
+    draw_label(7,100 - price_7, contract_7 + " \n " + str.tostring(100 - price_7))
+    draw_label(8,100 - price_8, contract_8 + " \n " + str.tostring(100 - price_8))
+
+    draw_line(0,100 - price_0, 1, 100 - price_1)
+    draw_line(1,100 - price_1, 2, 100 - price_2)
+    draw_line(2,100 - price_2, 3, 100 - price_3)
+    draw_line(3,100 - price_3, 4, 100 - price_4)
+    draw_line(4,100 - price_4, 5, 100 - price_5)
+    draw_line(5,100 - price_5, 6, 100 - price_6)
+    draw_line(6,100 - price_6, 7, 100 - price_7)
+    draw_line(7,100 - price_7, 8, 100 - price_8)
